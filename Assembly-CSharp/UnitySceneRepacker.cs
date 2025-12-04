@@ -6,25 +6,31 @@ using System.Runtime.InteropServices;
 namespace Modding;
 
 [StructLayout(LayoutKind.Sequential)]
-internal struct RepackStats {
+internal struct RepackStats
+{
     public int objectsBefore;
     public int objectsAfter;
 }
 
-internal class UnitySceneRepackerException : Exception {
+internal class UnitySceneRepackerException : Exception
+{
     public UnitySceneRepackerException(string message) : base(message) { }
 }
 
-internal static class UnitySceneRepacker {
-    public enum Mode {
+internal static class UnitySceneRepacker
+{
+    public enum Mode
+    {
         SceneBundle,
         AssetBundle,
     }
 
-    public static (byte[], RepackStats) Repack(string bundleName, string gamePath, string preloadsJson, Mode mode) {
+    public static (byte[], RepackStats) Repack(string bundleName, string gamePath, string preloadsJson, Mode mode)
+    {
         byte[] monobehaviourDump = GetEmbeddedTypetreeDump();
-        
-        export(
+
+        export
+        (
             bundleName,
             gamePath,
             preloadsJson,
@@ -34,13 +40,16 @@ internal static class UnitySceneRepacker {
             out RepackStats stats,
             monobehaviourDump,
             monobehaviourDump.Length,
-            (byte)mode
+            (byte) mode
         );
 
-        if (errorPtr != IntPtr.Zero) {
+        if (errorPtr != IntPtr.Zero)
+        {
             string error = PtrToStringAndFree(errorPtr)!;
             throw new UnitySceneRepackerException(error);
-        } else {
+        }
+        else
+        {
             byte[] bytes = PtrToByteArrayAndFree(bundleSize, bundleData);
             return (bytes, stats);
         }
@@ -48,7 +57,8 @@ internal static class UnitySceneRepacker {
 
 
     [DllImport("unityscenerepacker", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    private static extern void export(
+    private static extern void export
+    (
         [MarshalAs(UnmanagedType.LPUTF8Str)] string bundleName,
         [MarshalAs(UnmanagedType.LPUTF8Str)] string gameDir,
         [MarshalAs(UnmanagedType.LPUTF8Str)] string preloadJson,
@@ -59,7 +69,7 @@ internal static class UnitySceneRepacker {
         byte[] monobehaviourTypetreeExport,
         int monobehaviourTypetreeExportLen,
         byte mode
-        );
+    );
 
     [DllImport("unityscenerepacker", CallingConvention = CallingConvention.Cdecl)]
     private static extern void free_str(IntPtr str);
@@ -67,7 +77,8 @@ internal static class UnitySceneRepacker {
     [DllImport("unityscenerepacker", CallingConvention = CallingConvention.Cdecl)]
     private static extern void free_array(int len, IntPtr data);
 
-    private static string PtrToStringAndFree(IntPtr ptr) {
+    private static string PtrToStringAndFree(IntPtr ptr)
+    {
         if (ptr == IntPtr.Zero) return null;
 
         string message = Marshal.PtrToStringAnsi(ptr);
@@ -75,7 +86,8 @@ internal static class UnitySceneRepacker {
         return message;
     }
 
-    private static byte[] PtrToByteArrayAndFree(int size, IntPtr ptr) {
+    private static byte[] PtrToByteArrayAndFree(int size, IntPtr ptr)
+    {
         if (ptr == IntPtr.Zero || size == 0)
             return new byte[] { };
 
@@ -84,8 +96,9 @@ internal static class UnitySceneRepacker {
         free_array(size, ptr);
         return managedArray;
     }
-    
-    private static byte[] GetEmbeddedTypetreeDump() {
+
+    private static byte[] GetEmbeddedTypetreeDump()
+    {
         Assembly assembly = typeof(UnitySceneRepacker).Assembly;
         using Stream stream = assembly.GetManifestResourceStream("Modding.monobehaviour-typetree-dump.lz4")!;
         using var memoryStream = new MemoryStream();
