@@ -74,6 +74,13 @@ jobs:
       - name: Build Assembly-CSharp
         run: |
           dotnet build Assembly-CSharp --runtime $RID -p:Configuration=Release
+      - name: Merge osx dylibs
+        if: matrix.platform == 'macos'
+        run: |
+          wget https://github.com/konoui/lipo/releases/download/v0.9.4/lipo_linux_amd64 -O lipo
+          chmod +x lipo
+          ./lipo -output libunityscenerepacker.dylib -create ./Assembly-CSharp/packages/unityscenerepacker/2.4.0/runtimes/osx-*/native/libunityscenerepacker.dylib
+          mv libunityscenerepacker.dylib OutputFinal/
       - name: Upload Binary
         if: inputs.upload-artifact
         uses: actions/upload-artifact@v4
