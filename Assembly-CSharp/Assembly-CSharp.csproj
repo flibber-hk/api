@@ -125,7 +125,7 @@
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
         
-        <PackageReference Include="unityscenerepacker" Version="0.2.0" GeneratePathProperty="true" />
+        <PackageReference Include="unityscenerepacker" Version="2.4.0" GeneratePathProperty="true" />
     </ItemGroup>
     
     <ItemGroup>
