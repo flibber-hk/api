@@ -79,7 +79,7 @@ internal class Preloader : MonoBehaviour
                     break;
                 }
 
-                yield return DoPreloadAssetBundle(toPreload, preloadedObjects);
+                yield return DoPreloadAssetBundle(toPreload, preloadedObjects, sceneHooks);
                 break;
             default:
                 Logger.APILogger.LogError
@@ -101,7 +101,8 @@ internal class Preloader : MonoBehaviour
     private IEnumerator DoPreloadAssetBundle
     (
         Dictionary<string, List<(ModLoader.ModInstance Mod, List<string> Preloads)>> toPreload,
-        IDictionary<ModLoader.ModInstance, Dictionary<string, Dictionary<string, GameObject>>> preloadedObjects
+        IDictionary<ModLoader.ModInstance, Dictionary<string, Dictionary<string, GameObject>>> preloadedObjects,
+        Dictionary<string, List<Func<IEnumerator>>> sceneHooks
     )
     {
         const string PreloadBundleName = "modding_api_asset_bundle";
@@ -115,6 +116,7 @@ internal class Preloader : MonoBehaviour
             )
         );
         byte[] bundleData = null;
+        
         try
         {
             (bundleData, RepackStats repackStats) = UnitySceneRepacker.Repack(
@@ -132,6 +134,13 @@ internal class Preloader : MonoBehaviour
         catch (Exception e)
         {
             Logger.APILogger.LogError($"Error trying to repack preloads into asset bundle: {e}");
+        }
+
+        // Have to get around not being able to yield return in a catch block :/
+        if (bundleData == null)
+        {
+            yield return DoPreloadScenes(toPreload, preloadedObjects, sceneHooks);
+            yield break;
         }
 
         AssetBundleCreateRequest op = AssetBundle.LoadFromMemoryAsync(bundleData);
