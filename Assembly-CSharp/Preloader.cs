@@ -53,7 +53,7 @@ internal class Preloader : MonoBehaviour
                     break;
                 }
 
-                yield return DoPreloadAssetbundle(toPreload, preloadedObjects);
+                yield return DoPreloadAssetBundle(toPreload, preloadedObjects);
                 break;
             default:
                 Logger.APILogger.LogError
@@ -72,7 +72,7 @@ internal class Preloader : MonoBehaviour
     /// </summary>
     private static void MuteAllAudio() => AudioListener.pause = true;
 
-    private IEnumerator DoPreloadAssetbundle
+    private IEnumerator DoPreloadAssetBundle
     (
         Dictionary<string, List<(ModLoader.ModInstance Mod, List<string> Preloads)>> toPreload,
         IDictionary<ModLoader.ModInstance, Dictionary<string, Dictionary<string, GameObject>>> preloadedObjects
@@ -95,7 +95,7 @@ internal class Preloader : MonoBehaviour
                 (PreloadBundleName, Application.dataPath, preloadJson, UnitySceneRepacker.Mode.AssetBundle);
             Logger.APILogger.Log
             (
-                $"Repacked {toPreload.Count} preload scenes from {repackStats.objectsBefore} to {repackStats.objectsAfter} objects ({bundleData.Length / 1024f / 1024f:F2}MB)"
+                $"Repacked {toPreload.Count} preload scenes from {repackStats.ObjectsBefore} to {repackStats.ObjectsAfter} objects ({bundleData.Length / 1024f / 1024f:F2}MB)"
             );
         }
         catch (Exception e)
@@ -194,7 +194,7 @@ internal class Preloader : MonoBehaviour
                     (PreloadBundleName, Application.dataPath, preloadJson, UnitySceneRepacker.Mode.SceneBundle);
                 Logger.APILogger.Log
                 (
-                    $"Repacked {toPreload.Count} preload scenes from {repackStats.objectsBefore} to {repackStats.objectsAfter} objects ({bundleData.Length / 1024f / 1024f:F2}MB)"
+                    $"Repacked {toPreload.Count} preload scenes from {repackStats.ObjectsBefore} to {repackStats.ObjectsAfter} objects ({bundleData.Length / 1024f / 1024f:F2}MB)"
                 );
             }
             catch (Exception e)

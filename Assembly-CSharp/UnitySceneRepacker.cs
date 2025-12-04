@@ -8,8 +8,8 @@ namespace Modding;
 [StructLayout(LayoutKind.Sequential)]
 internal struct RepackStats
 {
-    public int objectsBefore;
-    public int objectsAfter;
+    public int ObjectsBefore;
+    public int ObjectsAfter;
 }
 
 internal class UnitySceneRepackerException : Exception
