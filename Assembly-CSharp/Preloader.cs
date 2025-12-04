@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -16,6 +17,11 @@ namespace Modding;
 internal class Preloader : MonoBehaviour
 {
     private ProgressBar progressBar;
+
+    private static string DataPath =>
+        Application.platform == RuntimePlatform.OSXPlayer
+            ? Path.Combine(Application.dataPath, "Resources", "Data")
+            : Application.dataPath;
 
     private void Start()
     {
@@ -111,8 +117,13 @@ internal class Preloader : MonoBehaviour
         byte[] bundleData = null;
         try
         {
-            (bundleData, RepackStats repackStats) = UnitySceneRepacker.Repack
-                (PreloadBundleName, Application.dataPath, preloadJson, UnitySceneRepacker.Mode.AssetBundle);
+            (bundleData, RepackStats repackStats) = UnitySceneRepacker.Repack(
+                PreloadBundleName,
+                DataPath,
+                preloadJson,
+                UnitySceneRepacker.Mode.AssetBundle
+            );
+            
             Logger.APILogger.Log
             (
                 $"Repacked {toPreload.Count} preload scenes from {repackStats.ObjectsBefore} to {repackStats.ObjectsAfter} objects ({bundleData.Length / 1024f / 1024f:F2}MB)"
@@ -120,7 +131,7 @@ internal class Preloader : MonoBehaviour
         }
         catch (Exception e)
         {
-            Logger.APILogger.LogError($"Error trying to repack preloads into assetbundle: {e}");
+            Logger.APILogger.LogError($"Error trying to repack preloads into asset bundle: {e}");
         }
 
         AssetBundleCreateRequest op = AssetBundle.LoadFromMemoryAsync(bundleData);
@@ -210,8 +221,13 @@ internal class Preloader : MonoBehaviour
         Task task = Task.Run(() => {
             try
             {
-                (bundleData, RepackStats repackStats) = UnitySceneRepacker.Repack
-                    (PreloadBundleName, Application.dataPath, preloadJson, UnitySceneRepacker.Mode.SceneBundle);
+                (bundleData, RepackStats repackStats) = UnitySceneRepacker.Repack(
+                    PreloadBundleName,
+                    DataPath,
+                    preloadJson,
+                    UnitySceneRepacker.Mode.SceneBundle
+                );
+                
                 Logger.APILogger.Log
                 (
                     $"Repacked {toPreload.Count} preload scenes from {repackStats.ObjectsBefore} to {repackStats.ObjectsAfter} objects ({bundleData.Length / 1024f / 1024f:F2}MB)"
