@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -34,7 +35,26 @@ internal class Preloader : MonoBehaviour
         bool usesSceneHooks = sceneHooks.Sum(kvp => kvp.Value.Count) > 0;
 
         Logger.APILogger.Log($"Preloading using mode {ModHooks.GlobalSettings.PreloadMode}");
-        switch (ModHooks.GlobalSettings.PreloadMode)
+        
+        var preloadMode = ModHooks.GlobalSettings.PreloadMode;
+
+        // If we're going to use UnitySceneRepacker, then
+        // prelink in order to ensure we actually have the dll
+        if (preloadMode != PreloadMode.FullScene)
+        {
+            try
+            {
+                Marshal.PrelinkAll(typeof(UnitySceneRepacker));
+            }
+            catch (DllNotFoundException)
+            {
+                Logger.APILogger.LogWarn("Unable to load UnitySceneRepacker, falling back to full scene loads.");
+                // Fall back to actually just loading the scene
+                preloadMode = PreloadMode.FullScene;
+            }
+        }
+
+        switch (preloadMode)
         {
             case PreloadMode.FullScene:
                 yield return DoPreloadScenes(toPreload, preloadedObjects, sceneHooks);
