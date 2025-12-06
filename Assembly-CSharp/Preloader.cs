@@ -263,7 +263,8 @@ internal class Preloader : MonoBehaviour
         }
 
         const string scenePrefix = $"{PreloadBundleName}_";
-        yield return DoPreloadScenes(toPreload, preloadedObjects, sceneHooks, scenePrefix);
+        yield return DoPreloadScenes(toPreload, preloadedObjects, sceneHooks: [], scenePrefix, progressAlpha: 0.5f, progressBeta: 0f);
+        yield return DoPreloadScenes(toPreload: [], preloadedObjects, sceneHooks, scenePrefix: "", progressAlpha: 0.5f, progressBeta: 0.5f);
         repackBundle.Unload(true);
     }
 
@@ -275,7 +276,9 @@ internal class Preloader : MonoBehaviour
         Dictionary<string, List<(ModLoader.ModInstance Mod, List<string> Preloads)>> toPreload,
         IDictionary<ModLoader.ModInstance, Dictionary<string, Dictionary<string, GameObject>>> preloadedObjects,
         Dictionary<string, List<Func<IEnumerator>>> sceneHooks,
-        string scenePrefix = ""
+        string scenePrefix = "",
+        float progressAlpha = 1,
+        float progressBeta = 0
     )
     {
         List<string> sceneNames = toPreload.Keys.Union(sceneHooks.Keys).ToList();
@@ -436,10 +439,10 @@ internal class Preloader : MonoBehaviour
                                    .Select(x => (x.load?.progress ?? 0) * 0.5f + (x.unload?.progress ?? 0) * 0.5f)
                                    .Average();
 
-            progressBar.Progress = sceneProgressAverage;
+            progressBar.Progress = (sceneProgressAverage * progressAlpha + progressBeta);
         }
 
-        progressBar.Progress = 1;
+        progressBar.Progress = (1 * progressAlpha + progressBeta);
     }
 
     /// <summary>
