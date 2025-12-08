@@ -263,8 +263,21 @@ internal class Preloader : MonoBehaviour
         }
 
         const string scenePrefix = $"{PreloadBundleName}_";
-        yield return DoPreloadScenes(toPreload, preloadedObjects, sceneHooks: [], scenePrefix, progressAlpha: 0.5f, progressBeta: 0f);
-        yield return DoPreloadScenes(toPreload: [], preloadedObjects, sceneHooks, scenePrefix: "", progressAlpha: 0.5f, progressBeta: 0.5f);
+
+        // NOTE: no ToHashSet since we're on netstandard2, but we need net472 to build for w/e reason.
+        var scenes = new HashSet<string>(sceneHooks.Select(x => x.Key));
+
+        // I'd kill for inference here tbh
+        // This lets us avoid double loading any scene used by objects _and_ hooks.
+        var shared = new Dictionary<string, List<(ModLoader.ModInstance, List<string>)>>();
+        var unshared = new Dictionary<string, List<(ModLoader.ModInstance, List<string>)>>();
+
+        foreach ((string key, var preload) in toPreload)
+            (scenes.Contains(key) ? shared : unshared)[key] = preload;
+        
+        yield return DoPreloadScenes(unshared, preloadedObjects, sceneHooks: [], scenePrefix, progressAlpha: 0.5f, progressBeta: 0f);
+        yield return DoPreloadScenes(shared, preloadedObjects, sceneHooks, scenePrefix: "", progressAlpha: 0.5f, progressBeta: 0.5f);
+        
         repackBundle.Unload(true);
     }
 
