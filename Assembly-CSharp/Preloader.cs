@@ -195,7 +195,7 @@ internal class Preloader : MonoBehaviour
                         }
                         else
                         {
-                            modScenePreloads.Add(path, go);
+                            modScenePreloads.Add(path, UnityEngine.Object.Instantiate(go));
                         }
                     };
                     queue.Add(request);
